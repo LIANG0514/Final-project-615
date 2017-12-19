@@ -1,0 +1,72 @@
+---
+title: "wordcloud"
+author: "Ang Li"
+date: "2017/12/15"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(devtools)
+library(twitteR)
+library(tm)
+library(stringr)
+library(wordcloud)
+
+api_key <- 	"089kmSBMLng9M2yCL4sFCcxaK"
+api_secret <- "ijnwPRU5BQBMwQGV6OaFskIdz2H3pfLnlLYW7LyUvli9IwSN5i"
+access_token <- "927643265679216641-A695nN09z1NQhjJjDNg2W04MJhu7R5s"
+access_token_secret <- "YXkytICiCulQNNXlH3YEQhcxAUxgcl9cj7Aj7E0fUfAxz"
+  
+
+
+setup_twitter_oauth(api_key, 
+                    api_secret, 
+                    access_token, 
+                    access_token_secret)
+```
+
+
+```{r}
+###WordCloud for Kate Upton
+
+KateUpton<-readRDS("tweets_kateupton.rds", refhook = NULL)
+
+# str_replace_all(HoustonRockets$text, "@", "")
+wordCorpus1 <- Corpus(VectorSource(str_replace_all(KateUpton$text, "@", "")))
+wordCorpus1 <- tm_map(wordCorpus1, removePunctuation)
+wordCorpus1 <- tm_map(wordCorpus1, content_transformer(tolower))
+wordCorpus1 <- tm_map(wordCorpus1, removeWords, stopwords("english"))
+wordCorpus1 <- tm_map(wordCorpus1, removeWords, c("kate","upton","kateupton","fuck"))
+wordCorpus1 <- tm_map(wordCorpus1, stripWhitespace)
+#saveRDS(starbucks, file="starbucks.rds")
+
+set.seed(100)
+wordcloud(words = wordCorpus1,scale=c(5,0.2),max.words=100, random.order=FALSE, 
+          rot.per=0.15,use.r.layout=FALSE, colors=brewer.pal(5,"Greens")[4:8])
+```
+
+```{r}
+###WordCloud for Justin Verlander
+
+JustinVerlander<-readRDS("tweets_JVerlander.rds", refhook = NULL)
+
+# str_replace_all(HoustonRockets$text, "@", "")
+wordCorpus2 <- Corpus(VectorSource(str_replace_all(JustinVerlander$text, "@", "")))
+wordCorpus2 <- tm_map(wordCorpus2, removePunctuation)
+wordCorpus2 <- tm_map(wordCorpus2, content_transformer(tolower))
+wordCorpus2 <- tm_map(wordCorpus2, removeWords, stopwords("english"))
+wordCorpus2 <- tm_map(wordCorpus2, removeWords, c("justin", "verlander", "justinverlander"))
+wordCorpus2 <- tm_map(wordCorpus2, stripWhitespace)
+#saveRDS(starbucks, file="starbucks.rds")
+
+set.seed(100)
+wordcloud(words = wordCorpus2,scale=c(5,0.2),max.words=200, random.order=FALSE, 
+          rot.per=0.2, use.r.layout=FALSE, colors=brewer.pal(5,"Greens")[4:8])
+```
+
+
+

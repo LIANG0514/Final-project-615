@@ -1,0 +1,93 @@
+---
+title: "sentiment A"
+author: "Ang Li"
+date: "2017/12/15"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tm)
+library(syuzhet)
+library(dplyr)
+library(ggplot2)
+library(reshape)
+library(plotly)
+
+people.tweets <- readRDS('player.tweets.rds')
+
+### write a function to help to clean the text
+clean.text <- function(txt){
+  txt = gsub("(RT|via)((?:\\b\\W*@\\w+)+)", "", txt)
+  txt = gsub("@\\w+", "", txt)
+  txt = gsub("[[:punct:]]", "", txt)
+  txt = gsub("[[:digit:]]", "", txt)
+  txt = gsub("http\\w+", "", txt)
+  txt = gsub("[ \t]{2,}", "", txt)
+  txt = gsub("^\\s+|\\s+$", "", txt)
+  txt = gsub("amp", "", txt)
+# define "tolower error handling" function
+  try.tolower = function(x)
+  {
+    y = NA
+    try_error = tryCatch(tolower(x), error=function(e) e)
+    if (!inherits(try_error, "error"))
+      y = tolower(x)
+    return(y)
+  }
+  txt = sapply(txt, try.tolower)
+  names(txt) = NULL
+  return(txt)
+}
+```
+
+```{r}
+
+### iteration for each player, similar to timeline
+people.text <- lapply(people.tweets, FUN=function(x) {clean.text(x$text)})
+people.sentiment <- lapply(people.text, FUN=function(x) {get_nrc_sentiment(x)})
+saveRDS(people.sentiment, file='player.sentiment.rds')
+
+
+```
+
+
+```{r}
+### Plot
+eee<-readRDS('player.sentiment.rds')
+k<-as.data.frame(eee[1])
+j<-as.data.frame(eee[2])
+colnames(k)<-c("Anger","Anticipation","Disgust","Fear","Joy","Sadness","Surprise","Trust","Negative","Positive")
+colnames(j)<-c("Anger","Anticipation","Disgust","Fear","Joy","Sadness","Surprise","Trust","Negative","Positive")
+
+k1<-reshape2::melt(data = k, measure.vars = c("Anger","Anticipation","Disgust","Fear","Joy","Sadness","Surprise","Trust","Negative","Positive"))
+
+k2 = k1 %>%
+  select(variable, value)%>%
+  group_by(variable)%>%
+  summarise(count=sum(value))
+  
+j1<-melt(data = j, measure.vars = c("Anger","Anticipation","Disgust","Fear","Joy","Sadness","Surprise","Trust","Negative","Positive"))
+
+j2 = j1 %>%
+  select(variable, value)%>%
+  group_by(variable)%>%
+  summarise(count=sum(value))
+
+
+p1<-ggplot(k2, aes(variable, count))+
+  geom_col(fill="tomato3")+
+  ggtitle("Sentiment Plot for Kate") + 
+     theme(plot.title = element_text(lineheight=.8, face="bold"),axis.text.x = element_text(angle = 45,hjust = 1,size=9))
+ggplotly(p1)
+ 
+p2<-ggplot(j2, aes(variable, count))+
+  geom_col(fill="tomato3")+
+  ggtitle("Sentiment Plot for Justin") + 
+     theme(plot.title = element_text(lineheight=.8, face="bold"),axis.text.x = element_text(angle = 45,hjust = 1,size=9))
+ggplotly(p2)
+```
+

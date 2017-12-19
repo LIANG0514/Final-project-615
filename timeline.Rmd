@@ -1,0 +1,74 @@
+---
+title: "timeline"
+author: "Ang Li"
+date: "2017/12/15"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(dplyr)
+library(devtools)
+library(twitteR)
+library(plotly)
+
+api_key <- 	"089kmSBMLng9M2yCL4sFCcxaK"
+api_secret <- "ijnwPRU5BQBMwQGV6OaFskIdz2H3pfLnlLYW7LyUvli9IwSN5i"
+
+access_token <- "927643265679216641-A695nN09z1NQhjJjDNg2W04MJhu7R5s"
+access_token_secret <- "YXkytICiCulQNNXlH3YEQhcxAUxgcl9cj7Aj7E0fUfAxz"
+  
+
+
+setup_twitter_oauth(api_key, 
+                    api_secret, 
+                    access_token, 
+                    access_token_secret)
+```
+
+
+```{r}
+### Their twitter account
+twitter_acc <- data.frame(name=c("KateUpton", "JustinVerlander"),
+                          twitter=c("KateUpton", "JustinVerlander"))
+```
+
+```{r}
+### search tweets for each player
+apply(twitter_acc, 1, FUN = function(x) {
+          df = userTimeline(x[2], n=3000)
+          df = twListToDF(df)
+          assign(x[1], df, envir=.GlobalEnv)})
+```
+
+```{r}
+### store them in a list and saveRDS
+people.tweets <- list(KateUpton=KateUpton, JustinVerlander=JustinVerlander)
+saveRDS(people.tweets, file='player.tweets.rds')
+```
+
+```{r}
+### Timeline for Kate Upton
+ku <- as.data.frame(people.tweets$KateUpton)
+p1 <- plot_ly(ku, x = ~created, y = ~favoriteCount, name="Favorite", type = 'scatter',
+              mode = 'lines', line=list(color="red")) %>% add_trace(y=~retweetCount, name="Retweet", type = 'scatter', mode = 'lines', line=list(color="darkred")) %>% add_trace(
+                y=max(ku$favoriteCount, ku$retweetCount), type = 'scatter', mode = 'lines', line=list(color="white"), hoverinfo = "text", text = ~text) %>% layout(
+                  title = 'Favorites/Retweets of Spotify Twitter Account in the Past 3 Years', xaxis = list(title = 'Date'), 
+                  yaxis=list(title='Number of favorites/retweets'))
+p1
+
+
+### Timeline for Justin Verlander
+jv <- as.data.frame(people.tweets$JustinVerlander)
+p2 <- plot_ly(jv, x = ~created, y = ~favoriteCount, name="Favorite", type = 'scatter',
+              mode = 'lines', line=list(color="red")) %>% add_trace(y=~retweetCount, name="Retweet", type = 'scatter', mode = 'lines', line=list(color="navy")) %>% add_trace(
+                y=max(jv$favoriteCount, jv$retweetCount), type = 'scatter', mode = 'lines', line=list(color="white"), hoverinfo = "text", text = ~text) %>% layout(
+                  title = 'Favorites/Retweets of Spotify Twitter Account in the Past 3 Years', xaxis = list(title = 'Date'), 
+                  yaxis=list(title='Number of favorites/retweets'))
+p2
+```
+
+

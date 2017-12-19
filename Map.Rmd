@@ -1,0 +1,36 @@
+---
+title: "Map"
+author: "Ang Li"
+date: "2017/12/16"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(sp)
+library(RgoogleMaps)
+library(ggmap)
+library(tidyverse)
+library(maptools)
+library(datasets)
+library(tigris)
+library(plotly)
+```
+
+```{r}
+wed<-readRDS("tweets_wedding.rds")
+wed$longitude<-as.numeric(wed$longitude)
+wed$latitude<-as.numeric(wed$latitude)
+q<-qmplot(longitude, latitude, data = wed, 
+       colour = I('red'), size = I(3), darken = .3)
+
+ggplotly(q)
+
+
+#ggmap(qmap()) + geom_point(aes(x=longitude, y=latitude, colour='tomato3'), data=wed)
+```
+
+
